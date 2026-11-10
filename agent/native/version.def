@@ -1,0 +1,19 @@
+LIBRARY version
+EXPORTS
+    GetFileVersionInfoA = dummy_export
+    GetFileVersionInfoByHandle = dummy_export
+    GetFileVersionInfoExA = dummy_export
+    GetFileVersionInfoExW = dummy_export
+    GetFileVersionInfoSizeA = dummy_export
+    GetFileVersionInfoSizeExA = dummy_export
+    GetFileVersionInfoSizeExW = dummy_export
+    GetFileVersionInfoSizeW = dummy_export
+    GetFileVersionInfoW = dummy_export
+    VerFindFileA = dummy_export
+    VerFindFileW = dummy_export
+    VerInstallFileA = dummy_export
+    VerInstallFileW = dummy_export
+    VerLanguageNameA = dummy_export
+    VerLanguageNameW = dummy_export
+    VerQueryValueA = dummy_export
+    VerQueryValueW = dummy_export

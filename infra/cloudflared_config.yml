@@ -1,0 +1,45 @@
+# =============================================================================
+# ARES FRAMEWORK - Cloudflare Named Tunnel Configuration Template
+# =============================================================================
+#
+# Prerequisites:
+#   1. Install cloudflared: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+#   2. Authenticate: cloudflared tunnel login
+#   3. Create tunnel: cloudflared tunnel create <TUNNEL_NAME>
+#   4. Route DNS: cloudflared tunnel route dns <TUNNEL_NAME> <HOSTNAME>
+#   5. Copy this template and fill in values below
+#
+# Usage:
+#   cloudflared tunnel --config cloudflared_config.yml run
+#
+# =============================================================================
+
+# Tunnel UUID — from 'cloudflared tunnel create' output
+tunnel: REPLACE_WITH_TUNNEL_UUID
+
+# Credentials file — generated during 'cloudflared tunnel create'
+credentials-file: /root/.cloudflared/REPLACE_WITH_TUNNEL_UUID.json
+
+# Ingress rules — route traffic to local C2 server
+ingress:
+  # Primary C2 endpoint
+  - hostname: REPLACE_WITH_C2_HOSTNAME
+    service: https://127.0.0.1:443
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      keepAliveTimeout: 90s
+
+  # Health check endpoint (optional)
+  - hostname: REPLACE_WITH_HEALTH_HOSTNAME
+    service: http://127.0.0.1:8080
+
+  # Catch-all (required by cloudflared)
+  - service: http_status:404
+
+# Logging
+loglevel: warn
+logfile: /var/log/cloudflared.log
+
+# Transport settings
+protocol: quic

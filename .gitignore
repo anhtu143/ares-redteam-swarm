@@ -1,0 +1,86 @@
+# === ARES OPSEC RULES ===
+# NEVER commit build artifacts, exfil data, or crypto material
+# v5.0 FIX H-30: Enhanced protection for source control
+
+# Secrets & credentials (CRITICAL)
+.secret
+.hmac_key
+admin_password.txt
+operators.json
+data/
+*.secret
+tools/chromelevator/
+**/output/
+*.tokens.json
+tokens.json
+
+# Build outputs
+build/
+dist/
+__pycache__/
+*.pyc
+*.spec
+build_*.txt
+*.exe
+*.dll
+*.o
+*.obj
+
+# Deployment packages
+*.rar
+*.zip
+*.iso
+*.img
+*.pdf
+*.hta
+*.dat
+
+# TLS/crypto material
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+tls_cert.go
+
+# C2 operational data
+c2server/data/
+c2server/*.exe
+c2server/cmd_*.exe
+
+# Debug artifacts
+*.log
+*.dmp
+*.pdb
+*.ilk
+
+# Config backups (contain XOR keys)
+*.webbak
+*.bak
+*~
+*.exe~
+ares_config.h.orig
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker secrets
+secrets/
+
+# Node.js / React panel
+node_modules/
+**/node_modules/
+panel/node_modules/
+panel/dist/
+c2-relay/node_modules/
+
+# Docker volumes
+pgdata/

